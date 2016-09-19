@@ -51,9 +51,12 @@ public:
   }
 
 private:
-  CmdVelSubscribers cmd_vel_sub; /**< Pool of cmd_vel topics subscribers */
-  ros::Publisher mux_cmd_vel_pub; /**< Multiplexed command velocity topic */
+  CmdVelSubscribers cmd_vel_subs;   /**< Pool of cmd_vel topics subscribers */
+  ros::Publisher output_topic_pub;  /**< Multiplexed command velocity topic */
+  std::string    output_topic_name; /**< Multiplexed command velocity topic name */
   ros::Publisher active_subscriber; /**< Currently allowed cmd_vel subscriber */
+  ros::Timer common_timer;          /**< No messages from any subscriber timeout */
+  double common_timer_period;       /**< No messages from any subscriber timeout period */
 
   void timerCallback(const ros::TimerEvent& event, unsigned int idx);
   void cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg, unsigned int idx);
