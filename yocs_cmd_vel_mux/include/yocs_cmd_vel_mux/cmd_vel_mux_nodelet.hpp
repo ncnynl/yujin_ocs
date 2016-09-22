@@ -51,6 +51,8 @@ public:
   }
 
 private:
+  static const unsigned int GLOBAL_TIMER = std::numeric_limits<unsigned int>::max();
+
   CmdVelSubscribers cmd_vel_subs;   /**< Pool of cmd_vel topics subscribers */
   ros::Publisher output_topic_pub;  /**< Multiplexed command velocity topic */
   std::string    output_topic_name; /**< Multiplexed command velocity topic name */

@@ -61,12 +61,13 @@ void CmdVelMuxNodelet::cmdVelCallback(const geometry_msgs::Twist::ConstPtr& msg,
 
 void CmdVelMuxNodelet::timerCallback(const ros::TimerEvent& event, unsigned int idx)
 {
-  if (cmd_vel_subs.allowed == idx || (idx == 8888 && cmd_vel_subs.allowed != VACANT))
+  if (cmd_vel_subs.allowed == idx || (idx == GLOBAL_TIMER && cmd_vel_subs.allowed != VACANT))
   {
-    if (idx == 8888)
+    if (idx == GLOBAL_TIMER)
     {
       // No cmd_vel messages timeout happened for ANYONE, so last active source got stuck without further
       // messages; not a big problem, just dislodge it; but possibly reflect a problem in the controller
+      NODELET_WARN("CmdVelMux : No cmd_vel messages from ANY input received in the last %fs", common_timer_period);
       NODELET_WARN("CmdVelMux : %s dislodged due to general timeout",
                    cmd_vel_subs[cmd_vel_subs.allowed]->name.c_str());
     }
@@ -80,7 +81,7 @@ void CmdVelMuxNodelet::timerCallback(const ros::TimerEvent& event, unsigned int 
     active_subscriber.publish(acv_msg);
   }
 
-  if (idx != 8888)
+  if (idx != GLOBAL_TIMER)
     cmd_vel_subs[idx]->active = false;
 }
 
@@ -228,14 +229,15 @@ void CmdVelMuxNodelet::reloadConfiguration(yocs_cmd_vel_mux::reloadConfig &confi
   {
     // Create another timer for cmd_vel messages from any source, so we can
     // dislodge last active source if it gets stuck without further messages
+    common_timer_period = longest_timeout * 2.0;
     common_timer =
-        pnh.createTimer(ros::Duration(longest_timeout * 2.0), TimerFunctor(8888, this), true, false);
-    common_timer_period = longest_timeout;
+        pnh.createTimer(ros::Duration(common_timer_period), TimerFunctor(GLOBAL_TIMER, this), true, false);
   }
-  else if (longest_timeout != common_timer_period)
+  else if (longest_timeout != (common_timer_period / 2.0))
   {
     // Longest timeout changed; just update existing timer period
-    common_timer.setPeriod(ros::Duration(longest_timeout * 2.0));
+    common_timer_period = longest_timeout * 2.0;
+    common_timer.setPeriod(ros::Duration(common_timer_period));
   }
 
   NODELET_INFO_STREAM("CmdVelMux : (re)configured");
