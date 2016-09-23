@@ -39,7 +39,6 @@ void operator >> (const YAML::Node& node, T& i)
 
 namespace yocs_cmd_vel_mux {
 
-const unsigned int VACANT = std::numeric_limits<unsigned int>::max();
 
 /*****************************************************************************
 ** CmdVelSubscribers
@@ -75,7 +74,7 @@ public:
     void operator << (const YAML::Node& node);
   };
 
-  CmdVelSubscribers() : allowed(VACANT) { }
+  CmdVelSubscribers() { }
   ~CmdVelSubscribers() { }
 
   std::vector<std::shared_ptr<CmdVelSubs>>::size_type size() { return list.size(); };
